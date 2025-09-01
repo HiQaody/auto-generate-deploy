@@ -9,6 +9,6 @@ spec:
     app: serviceressource
   ports:
     - protocol: TCP
-      port: 5031
-      targetPort: 5031
-      nodePort: 30131
+      port: 3000
+      targetPort: 3000
+      nodePort: 30130

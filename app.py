@@ -1,6 +1,9 @@
 import os
 import shutil
-from flask import Flask, render_template, request, jsonify
+import requests
+from flask import Flask, render_template, request, jsonify, send_file
+import zipfile
+
 
 app = Flask(__name__)
 
@@ -272,17 +275,29 @@ def generate_files(app_name, port, node_port, envs, output_dir):
 def index():
     return render_template("index.html")
 
+
 @app.route("/generate", methods=["POST"])
 def generate():
-    data = request.json
-    app_name = data.get("app_name")
-    port = data.get("port")
-    node_port = data.get("node_port")
-    envs = data.get("envs", [])
-    output_dir = os.path.join("generated", app_name)
     try:
+        data = request.json
+        app_name = data.get("app_name")
+        port = data.get("port")
+        node_port = data.get("node_port")
+        envs = data.get("envs", [])
+        output_dir = os.path.join("generated", app_name)
+
         generate_files(app_name, port, node_port, envs, output_dir)
-        return jsonify({"success": True, "message": f"Fichiers générés dans {output_dir}"})
+
+        # Compresser le dossier
+        with zipfile.ZipFile(f"{app_name}.zip", "w") as zip_file:
+            for root, dirs, files in os.walk(output_dir):
+                for file in files:
+                    zip_file.write(os.path.join(root, file), os.path.relpath(os.path.join(root, file), output_dir))
+
+        # Mettre en download
+        return send_file(f"{app_name}.zip", as_attachment=True)
+    except requests.exceptions.ConnectionError as e:
+        return jsonify({"success": False, "message": "Erreur de connexion : Impossible de contacter le serveur"}), 500
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
 

@@ -20,7 +20,7 @@ spec:
           image: ${FULL_IMAGE_NAME}
           imagePullPolicy: Always
           ports:
-            - containerPort: 5031
+            - containerPort: 3000
               name: http
           envFrom:
             - secretRef:
