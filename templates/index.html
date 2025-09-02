@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Générateur de fichiers backend</title>
+  <title>Générateur de fichiers backend/front-end</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -56,7 +56,7 @@
     <div class="relative bg-gradient-to-br from-indigo-600 to-purple-700 text-white p-8 text-center overflow-hidden">
       <div class="absolute inset-0 bg-gradient-radial from-white/10 to-transparent opacity-50 animate-pulse-custom"></div>
       <div class="relative z-10">
-        <h1 class="text-4xl font-bold mb-3 animate-float">🚀 Générateur Backend</h1>
+        <h1 class="text-4xl font-bold mb-3 animate-float">🚀 Générateur Backend / Front-end</h1>
         <p class="text-lg opacity-90 mb-4">Créez vos fichiers Dockerfile, YAML et Jenkinsfile en quelques clics</p>
         <div class="flex justify-center gap-2 flex-wrap">
           <span class="bg-white/20 px-4 py-2 rounded-full text-sm backdrop-blur-sm">Docker</span>
@@ -76,11 +76,11 @@
               <span class="text-lg">📦</span>
               Nom de l'application
             </label>
-            <input 
-              type="text" 
-              name="app_name" 
-              class="w-full p-4 border-2 border-gray-200 rounded-xl text-base transition-all duration-300 bg-gray-50 focus:outline-none focus:border-indigo-500 focus:bg-white focus:shadow-lg focus:-translate-y-1 hover:-translate-y-0.5" 
-              placeholder="mon-app-backend" 
+            <input
+              type="text"
+              name="app_name"
+              class="w-full p-4 border-2 border-gray-200 rounded-xl text-base transition-all duration-300 bg-gray-50 focus:outline-none focus:border-indigo-500 focus:bg-white focus:shadow-lg focus:-translate-y-1 hover:-translate-y-0.5"
+              placeholder="mon-app-backend"
               required
             >
           </div>
@@ -89,12 +89,12 @@
               <span class="text-lg">🔌</span>
               Port du container
             </label>
-            <input 
-              type="number" 
-              name="port" 
-              class="w-full p-4 border-2 border-gray-200 rounded-xl text-base transition-all duration-300 bg-gray-50 focus:outline-none focus:border-indigo-500 focus:bg-white focus:shadow-lg focus:-translate-y-1 hover:-translate-y-0.5" 
-              value="3000" 
-              placeholder="3000" 
+            <input
+              type="number"
+              name="port"
+              class="w-full p-4 border-2 border-gray-200 rounded-xl text-base transition-all duration-300 bg-gray-50 focus:outline-none focus:border-indigo-500 focus:bg-white focus:shadow-lg focus:-translate-y-1 hover:-translate-y-0.5"
+              value="3000"
+              placeholder="3000"
               required
             >
           </div>
@@ -105,14 +105,30 @@
             <span class="text-lg">🌐</span>
             NodePort Kubernetes
           </label>
-          <input 
-            type="number" 
-            name="node_port" 
-            class="w-full p-4 border-2 border-gray-200 rounded-xl text-base transition-all duration-300 bg-gray-50 focus:outline-none focus:border-indigo-500 focus:bg-white focus:shadow-lg focus:-translate-y-1 hover:-translate-y-0.5" 
-            value="30130" 
-            placeholder="30130" 
+          <input
+            type="number"
+            name="node_port"
+            class="w-full p-4 border-2 border-gray-200 rounded-xl text-base transition-all duration-300 bg-gray-50 focus:outline-none focus:border-indigo-500 focus:bg-white focus:shadow-lg focus:-translate-y-1 hover:-translate-y-0.5"
+            value="30130"
+            placeholder="30130"
             required
           >
+        </div>
+
+        <!-- Project Type Selection -->
+        <div class="group">
+          <label class="block mb-3 font-semibold text-gray-700 text-sm flex items-center gap-2">
+            <span class="text-lg">🛠️</span>
+            Type de projet
+          </label>
+          <select
+            name="project_type"
+            class="w-full p-4 border-2 border-gray-200 rounded-xl text-base transition-all duration-300 bg-gray-50 focus:outline-none focus:border-indigo-500 focus:bg-white focus:shadow-lg focus:-translate-y-1 hover:-translate-y-0.5"
+            required
+          >
+            <option value="backend" selected>Backend</option>
+            <option value="frontend">Frontend</option>
+          </select>
         </div>
 
         <!-- Environment Variables Section -->
@@ -125,42 +141,42 @@
             <strong class="text-blue-800">💡 Info :</strong> Configurez vos variables avec leurs credentials Jenkins pour une intégration automatique.<br>
             <span class="text-blue-800 font-medium">Valeur :</span> si vide, la valeur sera injectée par Jenkins, sinon utilisée telle quelle.
           </div>
-          
+
           <div id="envContainer" class="space-y-4">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-3 items-end animate-slide-in-row">
-              <input 
-                name="env_name" 
-                type="text" 
-                class="p-3 border-2 border-gray-200 rounded-lg text-sm transition-all duration-300 bg-white focus:outline-none focus:border-indigo-500 focus:shadow-md" 
-                placeholder="DB_HOST" 
+              <input
+                name="env_name"
+                type="text"
+                class="p-3 border-2 border-gray-200 rounded-lg text-sm transition-all duration-300 bg-white focus:outline-none focus:border-indigo-500 focus:shadow-md"
+                placeholder="DB_HOST"
                 required
               >
-              <input 
-                name="env_value" 
-                type="text" 
-                class="p-3 border-2 border-gray-200 rounded-lg text-sm transition-all duration-300 bg-white focus:outline-none focus:border-indigo-500 focus:shadow-md" 
-                placeholder="${DB_HOST} " 
+              <input
+                name="env_value"
+                type="text"
+                class="p-3 border-2 border-gray-200 rounded-lg text-sm transition-all duration-300 bg-white focus:outline-none focus:border-indigo-500 focus:shadow-md"
+                placeholder="${DB_HOST} "
               >
-              <input 
-                name="secret_id" 
-                type="text" 
-                class="p-3 border-2 border-gray-200 rounded-lg text-sm transition-all duration-300 bg-white focus:outline-none focus:border-indigo-500 focus:shadow-md" 
-                placeholder="POSTGRES_HOST_ID" 
+              <input
+                name="secret_id"
+                type="text"
+                class="p-3 border-2 border-gray-200 rounded-lg text-sm transition-all duration-300 bg-white focus:outline-none focus:border-indigo-500 focus:shadow-md"
+                placeholder="POSTGRES_HOST_ID"
               >
-              <button 
-                type="button" 
-                class="w-10 h-10 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg font-semibold cursor-pointer transition-all duration-300 flex items-center justify-center shadow-lg hover:scale-105 hover:shadow-xl" 
-                onclick="removeRow(this)" 
+              <button
+                type="button"
+                class="w-10 h-10 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg font-semibold cursor-pointer transition-all duration-300 flex items-center justify-center shadow-lg hover:scale-105 hover:shadow-xl"
+                onclick="removeRow(this)"
                 title="Supprimer"
               >
                 🗑️
               </button>
             </div>
           </div>
-          
-          <button 
-            type="button" 
-            class="mt-6 bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-3 rounded-lg font-semibold cursor-pointer transition-all duration-300 flex items-center gap-2 shadow-lg hover:-translate-y-1 hover:shadow-xl" 
+
+          <button
+            type="button"
+            class="mt-6 bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-3 rounded-lg font-semibold cursor-pointer transition-all duration-300 flex items-center gap-2 shadow-lg hover:-translate-y-1 hover:shadow-xl"
             onclick="addRow()"
           >
             ➕ Ajouter une variable
@@ -168,8 +184,8 @@
         </div>
 
         <!-- Submit Button -->
-        <button 
-          type="submit" 
+        <button
+          type="submit"
           class="w-full bg-gradient-to-r from-indigo-600 to-purple-700 text-white text-lg font-semibold py-4 px-8 rounded-xl transition-all duration-300 shadow-xl hover:-translate-y-1 hover:shadow-2xl active:translate-y-0 flex items-center justify-center gap-3"
         >
           🎯 Générer les fichiers
@@ -186,42 +202,42 @@
       <div id="result" class="mt-8"></div>
     </div>
   </div>
-  
+
   <script>
     function addRow() {
       const row = document.createElement('div');
       row.className = 'grid grid-cols-1 md:grid-cols-4 gap-3 items-end animate-slide-in-row';
       row.innerHTML = `
-        <input 
-          name="env_name" 
-          type="text" 
-          class="p-3 border-2 border-gray-200 rounded-lg text-sm transition-all duration-300 bg-white focus:outline-none focus:border-indigo-500 focus:shadow-md" 
-          placeholder="Nom variable (ex: DB_HOST)" 
+        <input
+          name="env_name"
+          type="text"
+          class="p-3 border-2 border-gray-200 rounded-lg text-sm transition-all duration-300 bg-white focus:outline-none focus:border-indigo-500 focus:shadow-md"
+          placeholder="Nom variable (ex: DB_HOST)"
           required
         >
-        <input 
-          name="env_value" 
-          type="text" 
-          class="p-3 border-2 border-gray-200 rounded-lg text-sm transition-all duration-300 bg-white focus:outline-none focus:border-indigo-500 focus:shadow-md" 
-          placeholder="Valeur par défaut" 
+        <input
+          name="env_value"
+          type="text"
+          class="p-3 border-2 border-gray-200 rounded-lg text-sm transition-all duration-300 bg-white focus:outline-none focus:border-indigo-500 focus:shadow-md"
+          placeholder="Valeur par défaut"
         >
-        <input 
-          name="secret_id" 
-          type="text" 
-          class="p-3 border-2 border-gray-200 rounded-lg text-sm transition-all duration-300 bg-white focus:outline-none focus:border-indigo-500 focus:shadow-md" 
-          placeholder="Jenkins Credential ID" 
+        <input
+          name="secret_id"
+          type="text"
+          class="p-3 border-2 border-gray-200 rounded-lg text-sm transition-all duration-300 bg-white focus:outline-none focus:border-indigo-500 focus:shadow-md"
+          placeholder="Jenkins Credential ID"
         >
-        <button 
-          type="button" 
-          class="w-10 h-10 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg font-semibold cursor-pointer transition-all duration-300 flex items-center justify-center shadow-lg hover:scale-105 hover:shadow-xl" 
-          onclick="removeRow(this)" 
+        <button
+          type="button"
+          class="w-10 h-10 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg font-semibold cursor-pointer transition-all duration-300 flex items-center justify-center shadow-lg hover:scale-105 hover:shadow-xl"
+          onclick="removeRow(this)"
           title="Supprimer"
         >
           🗑️
         </button>
       `;
       document.getElementById('envContainer').appendChild(row);
-      
+
       row.style.opacity = '0';
       row.style.transform = 'translateX(-20px)';
       setTimeout(() => {
@@ -250,9 +266,10 @@
       const app_name = form.app_name.value.trim();
       const port = form.port.value.trim();
       const node_port = form.node_port.value.trim();
+      const project_type = form.project_type.value;
       const rows = document.querySelectorAll('#envContainer > div');
       const envs = [];
-      
+
       rows.forEach(row => {
         const name = row.querySelector('input[name="env_name"]').value.trim();
         const value = row.querySelector('input[name="env_value"]').value.trim();
@@ -265,37 +282,67 @@
         const response = await fetch('/generate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ app_name, port, node_port, envs })
+          body: JSON.stringify({ app_name, port, node_port, envs, project_type })
         });
-        const data = await response.json();
-        loading.classList.add('hidden');
-        loading.classList.remove('flex');
-        if (data.success) {
+        if (response.headers.get('Content-Type').includes('application/zip')) {
+          // Si le contenu est un ZIP, on propose le téléchargement
+          const blob = await response.blob();
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = app_name + ".zip";
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          window.URL.revokeObjectURL(url);
+          loading.classList.add('hidden');
+          loading.classList.remove('flex');
           result.innerHTML = `
             <div class="mt-8 p-6 rounded-xl bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border border-green-200 flex items-center gap-3 opacity-0 translate-y-5 transition-all duration-400">
               <span class="text-xl">✅</span>
               <div>
-                <strong>Succès !</strong> ${data.message}
+                <strong>Succès !</strong> Fichiers générés et téléchargés.
               </div>
             </div>
           `;
+          setTimeout(() => {
+            const resultContainer = result.querySelector('div');
+            if (resultContainer) {
+              resultContainer.classList.remove('opacity-0', 'translate-y-5');
+              resultContainer.classList.add('opacity-100', 'translate-y-0');
+            }
+          }, 100);
         } else {
-          result.innerHTML = `
-            <div class="mt-8 p-6 rounded-xl bg-gradient-to-r from-red-100 to-pink-100 text-red-800 border border-red-200 flex items-center gap-3 opacity-0 translate-y-5 transition-all duration-400">
-              <span class="text-xl">❌</span>
-              <div>
-                <strong>Erreur :</strong> ${data.message}
+          const data = await response.json();
+          loading.classList.add('hidden');
+          loading.classList.remove('flex');
+          if (data.success) {
+            result.innerHTML = `
+              <div class="mt-8 p-6 rounded-xl bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border border-green-200 flex items-center gap-3 opacity-0 translate-y-5 transition-all duration-400">
+                <span class="text-xl">✅</span>
+                <div>
+                  <strong>Succès !</strong> ${data.message}
+                </div>
               </div>
-            </div>
-          `;
-        }
-        setTimeout(() => {
-          const resultContainer = result.querySelector('div');
-          if (resultContainer) {
-            resultContainer.classList.remove('opacity-0', 'translate-y-5');
-            resultContainer.classList.add('opacity-100', 'translate-y-0');
+            `;
+          } else {
+            result.innerHTML = `
+              <div class="mt-8 p-6 rounded-xl bg-gradient-to-r from-red-100 to-pink-100 text-red-800 border border-red-200 flex items-center gap-3 opacity-0 translate-y-5 transition-all duration-400">
+                <span class="text-xl">❌</span>
+                <div>
+                  <strong>Erreur :</strong> ${data.message}
+                </div>
+              </div>
+            `;
           }
-        }, 100);
+          setTimeout(() => {
+            const resultContainer = result.querySelector('div');
+            if (resultContainer) {
+              resultContainer.classList.remove('opacity-0', 'translate-y-5');
+              resultContainer.classList.add('opacity-100', 'translate-y-0');
+            }
+          }, 100);
+        }
       } catch (error) {
         loading.classList.add('hidden');
         loading.classList.remove('flex');

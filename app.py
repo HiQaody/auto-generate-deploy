@@ -13,19 +13,22 @@ from services.write_service_yaml import write_service_yaml
 from services.write_hpa_yaml import write_hpa_yaml
 from services.write_secret_yaml import write_secret_yaml
 from services.write_jenkinsfile import write_jenkinsfile
+from services.write_nginx_conf import write_nginx_conf
 
 # === Main Orchestration ===
-def generate_files(app_name, port, node_port, envs, output_dir):
+def generate_files(app_name, port, node_port, envs, output_dir, project_type):
     k8s_dir = os.path.join(output_dir, "k8s")
     if os.path.exists(output_dir):
         shutil.rmtree(output_dir)
     os.makedirs(k8s_dir, exist_ok=True)
-    write_dockerfile(app_name, port, envs, output_dir)
-    write_deployment_yaml(app_name, port, output_dir)
+    write_dockerfile(app_name, port, envs, output_dir, project_type)
+    write_deployment_yaml(app_name, port, output_dir, project_type)
     write_service_yaml(app_name, port, node_port, output_dir)
     write_hpa_yaml(app_name, output_dir)
     write_secret_yaml(app_name, envs, output_dir)
-    write_jenkinsfile(app_name, port, node_port, envs, output_dir)
+    write_jenkinsfile(app_name, port, envs, output_dir, project_type, node_port)
+    if project_type == "frontend":
+        write_nginx_conf( port, output_dir )
 
 # === Flask Endpoints ===
 @app.route("/", methods=["GET"])
@@ -40,9 +43,10 @@ def generate():
         port = data.get("port")
         node_port = data.get("node_port")
         envs = data.get("envs", [])
+        project_type = data.get("project_type", "backend")  # Valeur par défaut "backend"
         output_dir = os.path.join("generated", app_name)
 
-        generate_files(app_name, port, node_port, envs, output_dir)
+        generate_files(app_name, port, node_port, envs, output_dir, project_type)
 
         # Compresser le dossier
         zip_path = f"{app_name}.zip"

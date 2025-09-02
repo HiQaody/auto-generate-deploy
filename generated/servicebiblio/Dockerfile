@@ -3,7 +3,11 @@ FROM node:20-slim
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm ci --ignore-scripts && npm cache clean --force
+
+# Installation des dépendances
+RUN npm install --legacy-peer-deps
+
+# Copie du reste du code source
 COPY . .
 
 ARG DB_HOST
@@ -15,6 +19,9 @@ ARG UPLOAD_URL
 
 ARG PORT
 
+# Build du projet NestJS
+RUN npm run build
+
 ENV DB_HOST=${DB_HOST} \
     DB_PORT=${DB_PORT} \
     DB_USERNAME=${DB_USERNAME} \
@@ -23,7 +30,8 @@ ENV DB_HOST=${DB_HOST} \
     UPLOAD_URL=${UPLOAD_URL} \
     PORT=${PORT}
 
-EXPOSE ${PORT}
+EXPOSE 5032
 
 USER node
-CMD ["node", "dist/main", "--port", "${PORT}"]
+
+CMD ["node", "dist/main.js", "--port", "${PORT}"]
