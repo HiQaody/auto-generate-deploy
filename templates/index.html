@@ -143,6 +143,23 @@
                     </select>
                 </div>
 
+                <!-- Simple  ou avec kubernetes -->
+                <div class="group">
+                    <label class="block mb-3 font-semibold text-gray-700 text-sm flex items-center gap-2">
+                        <span class="text-lg">🛠️</span>
+                        Simple  ou avec kubernetes
+                    </label>
+                    <select
+                            id="simple_or_k8s"
+                            name="simple_or_k8s"
+                            class="w-full p-4 border-2 border-gray-200 rounded-xl text-base transition-all duration-300 bg-gray-50 focus:outline-none focus:border-indigo-500 focus:bg-white focus:shadow-lg focus:-translate-y-1 hover:-translate-y-0.5"
+                            required
+                    >
+                        <option value="false" selected>Kubernetes</option>
+                        <option value="true">Sans K8s</option>
+                    </select>
+                </div>
+
                 <!-- Environment Variables Section -->
                 <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-8 border border-gray-200 shadow-inner">
                     <h3 class="text-gray-800 mb-6 text-xl font-semibold flex items-center gap-3">
@@ -452,6 +469,7 @@
         const port = form.port.value.trim();
         const node_port = form.node_port.value.trim();
         const project_type = form.project_type.value;
+        const simple = form.simple_or_k8s.value;
         const rows = document.querySelectorAll('#envContainer > div');
         const envs = [];
 
@@ -467,7 +485,7 @@
             const response = await fetch('/generate', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({app_name, port, node_port, envs, project_type})
+                body: JSON.stringify({app_name, port, node_port, envs, project_type, simple})
             });
 
             loading.classList.add('hidden');

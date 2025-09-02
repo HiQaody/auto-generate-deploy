@@ -1,20 +1,89 @@
 import os
 
-def write_jenkinsfile(app_name, port, envs, output_dir, project_type, node_port=None):
+
+def write_jenkinsfile(app_name, port, envs, output_dir, project_type, node_port=None, simple=False):
     jenkinsfile_path = os.path.join(output_dir, "Jenkinsfile")
 
-    if project_type == "frontend":
-        # Préparation des variables d'environnement pour le front-end
+    if simple:
+        f = open(jenkinsfile_path, "w")
         env_lines = []
         build_args = []
-        secret_lines = []
         for e in envs:
             env_lines.append(f"        {e['name']} = '{e['value']}'")
             build_args.append(f"                          --build-arg {e['name']}=${{{e['name']}}} \\")
-            secret_lines.append(f"                          --from-literal={e['name']}=\"${{{e['name']}}}\" \\")
+        env_block = '\n'.join(env_lines)
+        build_args_block = '\n'.join(build_args)
+        # Simple Jenkinsfile (front)
+        f.write(f"""pipeline {{
+    agent any
 
-        with open(jenkinsfile_path, "w") as f:
-            f.write(f"""pipeline {{
+    environment {{
+        CONTAINER_NAME   = '{app_name}'
+        IMAGE_NAME       = '{app_name}'
+        IMAGE_TAG        = "${{BUILD_NUMBER}}"
+{env_block}
+        VITE_PORT        = '{port}'
+    }}
+
+    stages {{
+        stage('Build & Push') {{
+            steps {{
+                sh '''
+                        docker build \\
+{build_args_block}
+                          -t ${{IMAGE_NAME}}:${{IMAGE_TAG}} .
+                    '''
+            }}
+        }}
+
+        stage('Deploy the container') {{
+            steps {{
+                sh '''
+                        echo 'verifying container'
+                        docker ps -a | grep ${{CONTAINER_NAME}} > /dev/null
+                        if [ $? -eq 0 ]; then
+                            docker stop ${{CONTAINER_NAME}}
+                            docker rm ${{CONTAINER_NAME}}
+                        fi
+                        
+                        echo 'running container'
+                        docker run -d \\
+                            --name ${{CONTAINER_NAME}} \\
+                            -p ${{VITE_PORT}}:${{VITE_PORT}} \\
+                            --restart unless-stopped \\
+{chr(10).join([f"                            -e {e['name']}=${{{e['name']}}} \\" for e in envs])}
+                            ${{IMAGE_NAME}}:${{IMAGE_TAG}}
+                    '''
+            }}
+        }}
+    }}
+
+    post {{
+        always {{
+            cleanWs()
+        }}
+    }}
+}}
+""")
+        f.close()
+        return
+
+    if project_type == "frontend":
+        _write_jenkinsfile_frontend(jenkinsfile_path, app_name, port, envs)
+    else:  # backend
+        _write_jenkinsfile_backend(jenkinsfile_path, app_name, port, envs, node_port)
+
+
+def _write_jenkinsfile_frontend(jenkinsfile_path, app_name, port, envs):
+    env_lines = []
+    build_args = []
+    secret_lines = []
+    for e in envs:
+        env_lines.append(f"        {e['name']} = '{e['value']}'")
+        build_args.append(f"                          --build-arg {e['name']}=${{{e['name']}}} \\")
+        secret_lines.append(f"                          --from-literal={e['name']}=\"${{{e['name']}}}\" \\")
+    with open(jenkinsfile_path, "w") as f:
+        f.write(f"""pipeline {{
     agent any
 
     environment {{
@@ -102,14 +171,15 @@ def write_jenkinsfile(app_name, port, envs, output_dir, project_type, node_port=
     post {{ always {{ cleanWs() }} }}
 }}
 """)
-    else:  # backend
-        # Credentials uniquement pour ceux ayant un secret_id
-        creds = []
-        for e in envs:
-            if 'secret_id' in e and e['secret_id']:
-                creds.append((e['secret_id'], e['name']))
-        with open(jenkinsfile_path, "w") as f:
-            f.write(f"""pipeline {{
+
+
+def _write_jenkinsfile_backend(jenkinsfile_path, app_name, port, envs, node_port):
+    creds = []
+    for e in envs:
+        if 'secret_id' in e and e['secret_id']:
+            creds.append((e['secret_id'], e['name']))
+    with open(jenkinsfile_path, "w") as f:
+        f.write(f"""pipeline {{
     agent any
     environment {{
         REGISTRY         = 'harbor.tsirylab.com'
