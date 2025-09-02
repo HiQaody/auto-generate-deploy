@@ -1,6 +1,5 @@
 import os
 
-
 def write_dockerfile(app_name, port, envs, output_dir):
     dockerfile_path = os.path.join(output_dir, "Dockerfile")
     with open(dockerfile_path, "w") as f:
@@ -9,18 +8,25 @@ def write_dockerfile(app_name, port, envs, output_dir):
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm ci --ignore-scripts && npm cache clean --force
+
+# Installation des dépendances
+RUN npm install --legacy-peer-deps
+
+# Copie du reste du code source
 COPY . .
 
 {"".join([f"ARG {e['name']}\n" for e in envs])}
 ARG PORT
 
+# Build du projet NestJS
+RUN npm run build
+
 ENV {" \\\n    ".join([f"{e['name']}=${{{e['name']}}}" for e in envs])} \\
     PORT=${{PORT}}
 
-EXPOSE ${{PORT}}
+EXPOSE {port}
 
 USER node
-CMD ["node", "dist/main", "--port", "${{PORT}}"]
-""")
 
+CMD ["node", "dist/main.js", "--port", "${{PORT}}"]
+""")

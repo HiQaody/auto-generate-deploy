@@ -1,36 +1,30 @@
-import os
-
-def write_deployment_yaml(app_name, port, output_dir):
-    k8s_dir = os.path.join(output_dir, "k8s")
-    deployment_path = os.path.join(k8s_dir, f"{app_name}-deployment.yaml")
-    with open(deployment_path, "w") as f:
-        f.write(f"""apiVersion: apps/v1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {app_name}
+  name: servicecitoyen
   namespace: pnud-agvm
   labels:
-    app: {app_name}
+    app: servicecitoyen
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: {app_name}
+      app: servicecitoyen
   template:
     metadata:
       labels:
-        app: {app_name}
+        app: servicecitoyen
     spec:
       containers:
-        - name: {app_name}
-          image: ${{FULL_IMAGE_NAME}}
+        - name: servicecitoyen
+          image: ${FULL_IMAGE_NAME}
           imagePullPolicy: Always
           ports:
-            - containerPort: {port}
+            - containerPort: 5001
               name: http
           envFrom:
             - secretRef:
-                name: {app_name}-secret
+                name: servicecitoyen-secret
           resources:
             requests:
               cpu: "200m"
@@ -40,7 +34,7 @@ spec:
               memory: "1Gi"
           livenessProbe:
             httpGet:
-              path: /{app_name}
+              path: /servicecitoyen
               port: http
             initialDelaySeconds: 30
             periodSeconds: 10
@@ -48,7 +42,7 @@ spec:
             failureThreshold: 3
           readinessProbe:
             httpGet:
-              path: /{app_name}
+              path: /servicecitoyen
               port: http
             initialDelaySeconds: 5
             periodSeconds: 5
@@ -64,4 +58,3 @@ spec:
                 - ALL
       imagePullSecrets:
         - name: harbor-registry-secret
-""")

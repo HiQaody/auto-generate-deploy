@@ -1,0 +1,39 @@
+FROM node:20-slim
+
+WORKDIR /app
+
+COPY package*.json ./
+
+# Installation des dépendances
+RUN npm install --legacy-peer-deps
+
+# Copie du reste du code source
+COPY . .
+
+ARG POSTGRES_HOST
+ARG POSTGRES_PORT
+ARG POSTGRES_USER
+ARG POSTGRES_PASSWORD
+ARG POSTGRES_DB
+ARG SERVICE_TERRITORY_URL
+ARG SERVICE_UPLOAD_URL
+
+ARG PORT
+
+# Build du projet NestJS
+RUN npm run build
+
+ENV POSTGRES_HOST=${POSTGRES_HOST} \
+    POSTGRES_PORT=${POSTGRES_PORT} \
+    POSTGRES_USER=${POSTGRES_USER} \
+    POSTGRES_PASSWORD=${POSTGRES_PASSWORD} \
+    POSTGRES_DB=${POSTGRES_DB} \
+    SERVICE_TERRITORY_URL=${SERVICE_TERRITORY_URL} \
+    SERVICE_UPLOAD_URL=${SERVICE_UPLOAD_URL} \
+    PORT=${PORT}
+
+EXPOSE 5001
+
+USER node
+
+CMD ["node", "dist/main.js", "--port", "${PORT}"]
