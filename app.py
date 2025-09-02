@@ -1,8 +1,11 @@
+import glob
 import os
 import shutil
+import zipfile
+from datetime import datetime
+
 import requests
 from flask import Flask, render_template, request, jsonify, send_file
-import zipfile
 
 app = Flask(__name__)
 
@@ -14,6 +17,7 @@ from services.write_hpa_yaml import write_hpa_yaml
 from services.write_secret_yaml import write_secret_yaml
 from services.write_jenkinsfile import write_jenkinsfile
 from services.write_nginx_conf import write_nginx_conf
+
 
 # === Main Orchestration ===
 def generate_files(app_name, port, node_port, envs, output_dir, project_type):
@@ -28,12 +32,14 @@ def generate_files(app_name, port, node_port, envs, output_dir, project_type):
     write_secret_yaml(app_name, envs, output_dir)
     write_jenkinsfile(app_name, port, envs, output_dir, project_type, node_port)
     if project_type == "frontend":
-        write_nginx_conf( port, output_dir )
+        write_nginx_conf(port, output_dir)
+
 
 # === Flask Endpoints ===
 @app.route("/", methods=["GET"])
 def index():
     return render_template("index.html")
+
 
 @app.route("/generate", methods=["POST"])
 def generate():
@@ -43,7 +49,7 @@ def generate():
         port = data.get("port")
         node_port = data.get("node_port")
         envs = data.get("envs", [])
-        project_type = data.get("project_type", "backend")  # Valeur par défaut "backend"
+        project_type = data.get("project_type", "backend")
         output_dir = os.path.join("generated", app_name)
 
         generate_files(app_name, port, node_port, envs, output_dir, project_type)
@@ -57,12 +63,69 @@ def generate():
                     rel_path = os.path.relpath(abs_path, output_dir)
                     zip_file.write(abs_path, rel_path)
 
-        return send_file(zip_path, as_attachment=True)
+        return send_file(zip_path, as_attachment=True, download_name=f"{app_name}.zip")
 
     except requests.exceptions.ConnectionError:
         return jsonify({"success": False, "message": "Erreur de connexion : Impossible de contacter le serveur"}), 500
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
+
+
+@app.route("/download/<filename>", methods=["GET"])
+def download_file(filename):
+    try:
+        # Les fichiers ZIP sont à la racine du projet
+        zip_path = filename
+
+        # Vérifier que le fichier ZIP existe
+        if not os.path.exists(zip_path):
+            return jsonify({"error": "Fichier non trouvé"}), 404
+
+        return send_file(zip_path, as_attachment=True, download_name=filename)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/list-files", methods=["GET"])
+def list_generated_files():
+    """Retourne la liste des fichiers ZIP disponibles"""
+    try:
+        zip_files = glob.glob("*.zip")
+        files_info = []
+
+        for zip_file in zip_files:
+            stat = os.stat(zip_file)
+            files_info.append({
+                "name": zip_file,
+                "size": stat.st_size,
+                "created": datetime.fromtimestamp(stat.st_mtime).isoformat()
+            })
+
+        # Trier par date de création (plus récent en premier)
+        files_info.sort(key=lambda x: x["created"], reverse=True)
+
+        return jsonify({"files": files_info})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/cleanup", methods=["POST"])
+def cleanup_files():
+    """Nettoie les anciens fichiers ZIP et dossiers generated"""
+    try:
+        # Supprimer tous les fichiers ZIP
+        zip_files = glob.glob("*.zip")
+        for zip_file in zip_files:
+            os.remove(zip_file)
+
+        # Supprimer le dossier generated
+        if os.path.exists("generated"):
+            shutil.rmtree("generated")
+
+        return jsonify({"success": True, "message": f"Supprimé {len(zip_files)} fichier(s)"})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 
 if __name__ == "__main__":
     app.run(debug=True)
