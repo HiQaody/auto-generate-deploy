@@ -37,7 +37,6 @@ def generate_files(app_name, port, node_port, envs, output_dir, project_type, si
         write_secret_yaml(app_name, envs, output_dir)
         if project_type == "frontend":
             write_nginx_conf(port, output_dir)
-    # En mode simple, pas de nginx.conf ni YAML
 
 # === Flask Endpoints ===
 @app.route("/", methods=["GET"])
