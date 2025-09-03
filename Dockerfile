@@ -10,7 +10,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Définir une valeur par défaut pour le port
-ARG PORT=8000
+ARG PORT=4011
 ENV PORT=${PORT}
 
 # Exposer le port utilisé par l'application
