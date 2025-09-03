@@ -13,4 +13,4 @@ ENV PORT=${PORT}
 EXPOSE ${PORT}
 
 # Utiliser python -m gunicorn pour éviter les problèmes de PATH
-CMD ["python", "-m", "gunicorn", "--bind", "0.0.0.0:${PORT}", "main:app"]
+CMD ["python", "main.py"]
