@@ -1,5 +1,5 @@
 ###########################################################################
-# ÉTAPE 1 – Build Vite
+# Ã‰TAPE 1 â€“ Build Vite
 ###########################################################################
 FROM node:20-slim AS builder
 WORKDIR /app
@@ -9,17 +9,21 @@ RUN npm ci --ignore-scripts && npm cache clean --force
 
 COPY . .
 
-ARG VITE_API_URL
+{% for e in envs -%}
+ARG {{ e.name }}
+{% endfor %}
+ARG VITE_PORT={{ vite_port }}
 
-ARG VITE_PORT=3000
-
-ENV VITE_API_URL=${VITE_API_URL} \
-    VITE_PORT=${VITE_PORT}
+ENV \
+{% for e in envs -%}
+  {{ e.name }}=${{ e.name }} \
+{% endfor %}
+  VITE_PORT=${VITE_PORT}
 
 RUN npm run build
 
 ###########################################################################
-# ÉTAPE 2 – Image Nginx (non-root)
+# Ã‰TAPE 2 â€“ Image Nginx (non-root)
 ###########################################################################
 FROM nginxinc/nginx-unprivileged:1.25-alpine AS runner
 USER 101
@@ -29,6 +33,6 @@ COPY --from=builder --chown=101:101 /app/dist .
 
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 ENV PORT=${VITE_PORT}
-EXPOSE $vite_port
+EXPOSE {{ vite_port }}
 
 CMD ["nginx","-g","daemon off;"]

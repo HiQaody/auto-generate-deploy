@@ -1,0 +1,28 @@
+FROM node:20-slim
+
+WORKDIR /app
+
+COPY package*.json ./
+
+RUN npm install --legacy-peer-deps
+
+COPY . .
+
+{% for e in envs -%}
+ARG {{ e.name }}
+{% endfor %}
+ARG PORT
+
+RUN npm run build
+
+ENV \
+{% for e in envs -%}
+  {{ e.name }}=${{ e.name }} \
+{% endfor %}
+  PORT=${PORT}
+
+EXPOSE {{ port }}
+
+USER node
+
+CMD ["node", "dist/main.js", "--port", "${PORT}"]
