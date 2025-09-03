@@ -22,11 +22,11 @@ ARG PORT=4011
 ENV PORT=$PORT
 
 # Exposer le port indiquant l'app, par défaut 4011 (ajuster si besoin)
-EXPOSE $PORT
+EXPOSE 4011
 
 # Utiliser l'utilisateur non-root
 USER app
 
 # Commande de démarrage avec Gunicorn (4 workers, 1 thread chacun)
 # Utilise la variable d'environnement PORT pour la flexibilité
-CMD ["gunicorn", "--bind", "0.0.0.0:${PORT}", "--workers", "4", "--threads", "1", "app:app"]
+CMD ["gunicorn", "--bind", "0.0.0.0:4011", "--workers", "4", "--threads", "1", "app:app"]
