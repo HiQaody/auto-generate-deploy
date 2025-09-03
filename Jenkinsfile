@@ -58,9 +58,6 @@ pipeline {
                           --namespace=$NAMESPACE
 
                         kubectl delete secret $SECRET_NAME -n $NAMESPACE --ignore-not-found
-                        kubectl create secret generic $SECRET_NAME \
-
-                          --namespace=$NAMESPACE
 
                         for res in deployment service hpa; do
                             envsubst < $K8S_DIR/jacquinot-devops-$res.yaml > /tmp/jacquinot-devops-$res.yaml
