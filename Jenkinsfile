@@ -20,14 +20,13 @@ pipeline {
         stage('Build & Push') {
             steps {
                 withCredentials([
-                    usernamePassword(credentialsId: 'harbor-credentials', usernameVariable: 'HARBOR_USER', passwordVariable: 'HARBOR_PASS'),
-
+                    usernamePassword(credentialsId: 'harbor-credentials', usernameVariable: 'HARBOR_USER', passwordVariable: 'HARBOR_PASS')
                 ]) {
                     sh '''
                         set -e
                         docker logout $REGISTRY || true
                         docker build \
-                          --build-arg PORT=4011 \
+                          --build-arg PORT=$PORT \
                           -t $FULL_IMAGE_NAME .
                         echo $HARBOR_PASS | \
                           docker login -u $HARBOR_USER --password-stdin $REGISTRY
@@ -42,8 +41,7 @@ pipeline {
             steps {
                 withCredentials([
                     file(credentialsId: 'kubeconfig-jenkins', variable: 'KUBECONFIG'),
-                    usernamePassword(credentialsId: 'harbor-credentials', usernameVariable: 'HARBOR_USER', passwordVariable: 'HARBOR_PASS'),
-
+                    usernamePassword(credentialsId: 'harbor-credentials', usernameVariable: 'HARBOR_USER', passwordVariable: 'HARBOR_PASS')
                 ]) {
                     sh '''
                         set -e
@@ -57,15 +55,13 @@ pipeline {
                           --docker-password="$HARBOR_PASS" \
                           --namespace=$NAMESPACE
 
-                        kubectl delete secret $SECRET_NAME -n $NAMESPACE --ignore-not-found
-
                         for res in deployment service hpa; do
-                            envsubst < $K8S_DIR/jacquinot-devops-$res.yaml > /tmp/jacquinot-devops-$res.yaml
-                            kubectl apply -f /tmp/jacquinot-devops-$res.yaml
+                            envsubst < $K8S_DIR/$DEPLOYMENT_NAME-$res.yaml > /tmp/$DEPLOYMENT_NAME-$res.yaml
+                            kubectl apply -f /tmp/$DEPLOYMENT_NAME-$res.yaml
                         done
 
-                        kubectl rollout status deployment/jacquinot-devops -n $NAMESPACE --timeout=120s
-                        kubectl get pods -n $NAMESPACE -l app=jacquinot-devops
+                        kubectl rollout status deployment/$DEPLOYMENT_NAME -n $NAMESPACE --timeout=120s
+                        kubectl get pods -n $NAMESPACE -l app=$DEPLOYMENT_NAME
                     '''
                 }
             }
