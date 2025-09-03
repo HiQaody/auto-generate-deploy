@@ -22,9 +22,6 @@ spec:
           ports:
             - containerPort: 4011
               name: http
-          envFrom:
-            - secretRef:
-                name: jacquinot-devops-secret
           resources:
             requests:
               cpu: "200m"
