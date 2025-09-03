@@ -25,7 +25,6 @@ def generate_files(app_name, port, node_port, envs, output_dir, project_type, si
     if os.path.exists(output_dir):
         shutil.rmtree(output_dir)
     os.makedirs(k8s_dir, exist_ok=True)
-    # Simple mode : juste Dockerfile et Jenkinsfile
     write_dockerfile(app_name, port, envs, output_dir, project_type)
     write_jenkinsfile(app_name, port, envs, output_dir, project_type, node_port, simple)
     if project_type == "frontend" :

@@ -1,8 +1,8 @@
 import os
 
+
 def write_deployment_yaml(app_name, port, output_dir, project_type):
     k8s_dir = os.path.join(output_dir, "k8s")
-    os.makedirs(k8s_dir, exist_ok=True)
     deployment_path = os.path.join(k8s_dir, f"{app_name}-deployment.yaml")
 
     if project_type == "frontend":
@@ -122,3 +122,8 @@ spec:
       imagePullSecrets:
         - name: harbor-registry-secret
 """
+
+    with open(deployment_path, "w") as f:
+        f.write(yaml)
+
+    print(f"✅ Deployment YAML généré : {deployment_path}")
