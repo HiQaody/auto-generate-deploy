@@ -50,4 +50,4 @@ ENV \
 USER app
 
 # Lancer Flask (adapte la commande si tu utilises FastAPI/Uvicorn)
-CMD ["gunicorn", "main:app", "--bind", "0.0.0.0:${PORT}"]
+CMD ["gunicorn", "app:app", "--bind", "0.0.0.0:${PORT}"]
