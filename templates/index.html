@@ -144,6 +144,22 @@
                     </select>
                 </div>
 
+                <!-- Après le select project_type -->
+                <div class="group" id="backendFrameworkGroup" style="display:none;">
+                    <label class="block mb-3 font-semibold text-gray-700 text-sm flex items-center gap-2">
+                        <span class="text-lg">⚙️</span>
+                        Framework backend
+                    </label>
+                    <select
+                            id="backend_framework"
+                            name="backend_framework"
+                            class="w-full p-4 border-2 border-gray-200 rounded-xl text-base transition-all duration-300 bg-gray-50 focus:outline-none focus:border-indigo-500 focus:bg-white focus:shadow-lg focus:-translate-y-1 hover:-translate-y-0.5"
+                    >
+                        <option value="nestjs" selected>NestJS</option>
+                        <option value="flask">Flask</option>
+                    </select>
+                </div>
+
                 <!-- Simple  ou avec kubernetes -->
                 <div class="group">
                     <label class="block mb-3 font-semibold text-gray-700 text-sm flex items-center gap-2">
@@ -160,6 +176,7 @@
                         <option value="true">Sans K8s</option>
                     </select>
                 </div>
+
 
                 <!-- Environment Variables Section -->
                 <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-8 border border-gray-200 shadow-inner">
@@ -455,6 +472,15 @@
     // Charger la liste au démarrage
     document.addEventListener('DOMContentLoaded', function () {
         loadFilesFromServer();
+        const projectTypeSelect = document.querySelector('select[name="project_type"]');
+        const backendFrameworkGroup = document.getElementById('backendFrameworkGroup');
+
+        function toggleBackendFramework() {
+            backendFrameworkGroup.style.display = projectTypeSelect.value === 'backend' ? '' : 'none';
+        }
+
+        projectTypeSelect.addEventListener('change', toggleBackendFramework);
+        toggleBackendFramework();
     });
 
     document.getElementById('genForm').onsubmit = async function (e) {
@@ -471,6 +497,7 @@
         const node_port = form.node_port.value.trim();
         const project_type = form.project_type.value;
         const simple = form.simple_or_k8s.value === "true";
+        const backend_framework = (project_type === 'backend' && form.backend_framework) ? form.backend_framework.value : null;
         const rows = document.querySelectorAll('#envContainer > div');
         const envs = [];
 
@@ -486,14 +513,15 @@
             const response = await fetch('/generate', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({app_name, port, node_port, envs, project_type, simple})
+                body: JSON.stringify({
+                    app_name, port, node_port, envs, project_type, simple, backend_framework
+                })
             });
 
             loading.classList.add('hidden');
             loading.classList.remove('flex');
 
             if (response.ok) {
-                // Télécharger le fichier ZIP
                 const blob = await response.blob();
                 const fileName = `${app_name}.zip`;
                 const url = window.URL.createObjectURL(blob);
@@ -505,20 +533,18 @@
                 a.remove();
                 window.URL.revokeObjectURL(url);
 
-                // Recharger la liste des fichiers depuis le serveur
                 setTimeout(() => {
-                    loadFilesFromServer();
+                    if (typeof loadFilesFromServer === "function") loadFilesFromServer();
                 }, 1000);
 
-                // Afficher le message de succès
                 result.innerHTML = `
-        <div class="mt-8 p-6 rounded-xl bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border border-green-200 flex items-center gap-3 opacity-0 translate-y-5 transition-all duration-400">
-          <span class="text-xl">✅</span>
-          <div>
-            <strong>Succès !</strong> Fichiers générés et téléchargés : <strong>${fileName}</strong>
-          </div>
-        </div>
-      `;
+                <div class="mt-8 p-6 rounded-xl bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border border-green-200 flex items-center gap-3 opacity-0 translate-y-5 transition-all duration-400">
+                  <span class="text-xl">✅</span>
+                  <div>
+                    <strong>Succès !</strong> Fichiers générés et téléchargés : <strong>${fileName}</strong>
+                  </div>
+                </div>
+            `;
 
                 setTimeout(() => {
                     const resultContainer = result.querySelector('div');
@@ -530,13 +556,13 @@
             } else {
                 const data = await response.json();
                 result.innerHTML = `
-        <div class="mt-8 p-6 rounded-xl bg-gradient-to-r from-red-100 to-pink-100 text-red-800 border border-red-200 flex items-center gap-3 opacity-0 translate-y-5 transition-all duration-400">
-          <span class="text-xl">❌</span>
-          <div>
-            <strong>Erreur :</strong> ${data.message}
-          </div>
-        </div>
-      `;
+                <div class="mt-8 p-6 rounded-xl bg-gradient-to-r from-red-100 to-pink-100 text-red-800 border border-red-200 flex items-center gap-3 opacity-0 translate-y-5 transition-all duration-400">
+                  <span class="text-xl">❌</span>
+                  <div>
+                    <strong>Erreur :</strong> ${data.message}
+                  </div>
+                </div>
+            `;
                 setTimeout(() => {
                     const resultContainer = result.querySelector('div');
                     if (resultContainer) {
@@ -549,16 +575,15 @@
             loading.classList.add('hidden');
             loading.classList.remove('flex');
             result.innerHTML = `
-      <div class="mt-8 p-6 rounded-xl bg-gradient-to-r from-red-100 to-pink-100 text-red-800 border border-red-200 flex items-center gap-3">
-        <span class="text-xl">❌</span>
-        <div>
-          <strong>Erreur de connexion :</strong> Impossible de contacter le serveur
-        </div>
-      </div>
-    `;
+          <div class="mt-8 p-6 rounded-xl bg-gradient-to-r from-red-100 to-pink-100 text-red-800 border border-red-200 flex items-center gap-3">
+            <span class="text-xl">❌</span>
+            <div>
+              <strong>Erreur de connexion :</strong> Impossible de contacter le serveur
+            </div>
+          </div>
+        `;
         }
     };
-
     // Animation de typing pour le placeholder
     const appNameInput = document.querySelector('input[name="app_name"]');
     const placeholders = ['mon-app-backend', 'api-users', 'service-auth', 'microservice-data', 'react-app', 'vue-frontend'];

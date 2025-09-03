@@ -20,12 +20,12 @@ from services.write_nginx_conf import write_nginx_conf
 
 
 # === Main Orchestration ===
-def generate_files(app_name, port, node_port, envs, output_dir, project_type, simple):
+def generate_files(app_name, port, node_port, envs, output_dir, project_type, simple, backend_framework=None):
     k8s_dir = os.path.join(output_dir, "k8s")
     if os.path.exists(output_dir):
         shutil.rmtree(output_dir)
     os.makedirs(k8s_dir, exist_ok=True)
-    write_dockerfile(app_name, port, envs, output_dir, project_type)
+    write_dockerfile(app_name, port, envs, output_dir, project_type, backend_framework)
     write_jenkinsfile(app_name, port, envs, output_dir, project_type, node_port, simple)
     if project_type == "frontend" :
         write_nginx_conf(port, output_dir)
@@ -53,9 +53,10 @@ def generate():
         envs = data.get("envs", [])
         project_type = data.get("project_type", "backend")
         simple = data.get("simple", False)
+        backend_framework = data.get("backend_framework", "nestjs")
         output_dir = os.path.join("generated", app_name)
 
-        generate_files(app_name, port, node_port, envs, output_dir, project_type, simple)
+        generate_files(app_name, port, node_port, envs, output_dir, project_type, simple, backend_framework)
 
         # Compresser le dossier
         zip_path = f"{app_name}.zip"
@@ -117,4 +118,6 @@ def cleanup_files():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    # lancer en port avec la variable d'environnement
+    port = os.environ.get("PORT", 4001)
+    app.run(debug=True, port=port, host="0.0.0.0")

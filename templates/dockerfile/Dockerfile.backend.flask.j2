@@ -1,0 +1,23 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+{% for e in envs -%}
+ARG {{ e.name }}
+{% endfor %}
+ARG PORT
+
+ENV \
+{% for e in envs -%}
+  {{ e.name }}=${{ e.name }} \
+{% endfor %}
+  PORT=${PORT}
+
+EXPOSE {{ port }}
+
+CMD ["gunicorn", "--bind", "0.0.0.0:${PORT}", "main:app"]
