@@ -33,7 +33,7 @@ pipeline {
 
                         docker build \
 {% for e in envs %}
-                          --build-arg {{ e.name }}=${{{ e.name }}} \
+                          --build-arg {{ e.name }}=${{ e.name }} \
 {% endfor %}
                           -t ${FULL_IMAGE_NAME} .
 
