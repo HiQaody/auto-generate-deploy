@@ -3,17 +3,14 @@ kind: Deployment
 metadata:
   name: jacquinot-devops
   namespace: pnud-agvm
-  labels:
-    app: jacquinot-devops
+  labels: { app: jacquinot-devops }
 spec:
   replicas: 1
   selector:
-    matchLabels:
-      app: jacquinot-devops
+    matchLabels: { app: jacquinot-devops }
   template:
     metadata:
-      labels:
-        app: jacquinot-devops
+      labels: { app: jacquinot-devops }
     spec:
       containers:
         - name: jacquinot-devops
@@ -22,25 +19,24 @@ spec:
           ports:
             - containerPort: 4011
               name: http
+          env:
+            # on redirige TMPDIR vers le même point de montage
+            - name: TMPDIR
+              value: /tmp
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
           resources:
-            requests:
-              cpu: "200m"
-              memory: "256Mi"
-            limits:
-              cpu: "1000m"
-              memory: "1Gi"
+            requests: { cpu: 200m, memory: 256Mi }
+            limits:   { cpu: 1000m, memory: 1Gi }
           livenessProbe:
-            httpGet:
-              path: /
-              port: http
+            httpGet: { path: /, port: http }
             initialDelaySeconds: 30
             periodSeconds: 10
             timeoutSeconds: 5
             failureThreshold: 3
           readinessProbe:
-            httpGet:
-              path: /
-              port: http
+            httpGet: { path: /, port: http }
             initialDelaySeconds: 5
             periodSeconds: 5
             timeoutSeconds: 3
@@ -50,8 +46,10 @@ spec:
             runAsUser: 1000
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
-            capabilities:
-              drop:
-                - ALL
+            capabilities: { drop: [ALL] }
+      volumes:
+        - name: tmp
+          emptyDir:
+            sizeLimit: 1Gi
       imagePullSecrets:
         - name: harbor-registry-secret
