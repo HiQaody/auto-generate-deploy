@@ -25,16 +25,24 @@ def generate_files(app_name, port, node_port, envs, output_dir, project_type, si
     if os.path.exists(output_dir):
         shutil.rmtree(output_dir)
     os.makedirs(k8s_dir, exist_ok=True)
+    print("--------- creation dockerfile ----------------")
     write_dockerfile(app_name, port, envs, output_dir, project_type, backend_framework)
+    print("--------- creation jenkinsfile ----------------")
     write_jenkinsfile(app_name, port, envs, output_dir, project_type, node_port, simple)
     if project_type == "frontend" :
+        print("--------- creation nginx conf ----------------")
         write_nginx_conf(port, output_dir)
     if not simple:
+        print("--------- creation deployment yaml ----------------")
         write_deployment_yaml(app_name, port, output_dir, project_type)
+        print("--------- creation service yaml ----------------")
         write_service_yaml(app_name, port, node_port, output_dir)
+        print("--------- creation hpa yaml ----------------")
         write_hpa_yaml(app_name, output_dir)
+        print("--------- creation secret yaml ----------------")
         write_secret_yaml(app_name, envs, output_dir)
         if project_type == "frontend":
+            print("--------- creation nginx conf ----------------")
             write_nginx_conf(port, output_dir)
 
 # === Flask Endpoints ===

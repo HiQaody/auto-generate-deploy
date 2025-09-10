@@ -4,37 +4,36 @@ pipeline {
     environment {
         REGISTRY         = "harbor.tsirylab.com"
         HARBOR_PROJECT   = "pnud-agvm"
-        IMAGE_NAME       = "{{ app_name }}"
+        IMAGE_NAME       = "vite-app"
         IMAGE_TAG        = "${BUILD_NUMBER}"
         FULL_IMAGE_NAME  = "${REGISTRY}/${HARBOR_PROJECT}/${IMAGE_NAME}:${IMAGE_TAG}"
         NAMESPACE        = "pnud-agvm"
         K8S_DIR          = "k8s"
-        DEPLOYMENT_NAME  = "{{ app_name }}"
-        SERVICE_NAME     = "{{ app_name }}-service"
-        HPA_NAME         = "{{ app_name }}-hpa"
-        SECRET_NAME      = "{{ app_name }}-secret"
-        PORT             = "{{ port }}"
-        NODE_PORT        = "{{ node_port }}"
-{% for e in envs %}
-        {{ e.name }} = "{{ e.value }}"
-{% endfor %}
+        DEPLOYMENT_NAME  = "vite-app"
+        SERVICE_NAME     = "vite-app-service"
+        HPA_NAME         = "vite-app-hpa"
+        SECRET_NAME      = "vite-app-secret"
+        PORT             = "3000"
+        NODE_PORT        = "30130"
+
+        DB_HOST = "${DB_HOST}"
+
     }
 
     stages {
         stage('Build & Push') {
             steps {
                 withCredentials([
-                    usernamePassword(credentialsId: 'harbor-credentials', usernameVariable: 'HARBOR_USER', passwordVariable: 'HARBOR_PASS'){% for cred in creds %},
-                    string(credentialsId: '{{ cred.secret_id }}', variable: '{{ cred.name }}'){% endfor %}
+                    usernamePassword(credentialsId: 'harbor-credentials', usernameVariable: 'HARBOR_USER', passwordVariable: 'HARBOR_PASS')
                 ]) {
                     sh '''
                         set -e
                         docker logout $REGISTRY || true
                         docker build \
                           --build-arg PORT=${PORT} \
-{% for e in envs %}
-                          --build-arg {{ e.name }}=${{ e.name }} \
-{% endfor %}
+
+                          --build-arg DB_HOST=$DB_HOST \
+
                           -t $FULL_IMAGE_NAME .
                         echo $HARBOR_PASS | \
                           docker login -u $HARBOR_USER --password-stdin $REGISTRY
@@ -49,8 +48,7 @@ pipeline {
             steps {
                 withCredentials([
                     file(credentialsId: 'kubeconfig-jenkins', variable: 'KUBECONFIG'),
-                    usernamePassword(credentialsId: 'harbor-credentials', usernameVariable: 'HARBOR_USER', passwordVariable: 'HARBOR_PASS'){% for cred in creds %},
-                    string(credentialsId: '{{ cred.secret_id }}', variable: '{{ cred.name }}'){% endfor %}
+                    usernamePassword(credentialsId: 'harbor-credentials', usernameVariable: 'HARBOR_USER', passwordVariable: 'HARBOR_PASS')
                 ]) {
                     sh '''
                         set -e
@@ -66,18 +64,18 @@ pipeline {
 
                         kubectl delete secret $SECRET_NAME -n $NAMESPACE --ignore-not-found
                         kubectl create secret generic $SECRET_NAME \
-{% for e in envs %}
-                          --from-literal={{ e.name }}="{% if e.value %}{{ e.value }}{% else %}${{ e.name }}{% endif %}" \
-{% endfor %}
+
+                          --from-literal=DB_HOST="${DB_HOST}" \
+
                           --namespace=$NAMESPACE
 
                         for res in deployment service hpa; do
-                            envsubst < $K8S_DIR/{{ app_name }}-$res.yaml > /tmp/{{ app_name }}-$res.yaml
-                            kubectl apply -f /tmp/{{ app_name }}-$res.yaml
+                            envsubst < $K8S_DIR/vite-app-$res.yaml > /tmp/vite-app-$res.yaml
+                            kubectl apply -f /tmp/vite-app-$res.yaml
                         done
 
-                        kubectl rollout status deployment/{{ app_name }} -n $NAMESPACE --timeout=120s
-                        kubectl get pods -n $NAMESPACE -l app={{ app_name }}
+                        kubectl rollout status deployment/vite-app -n $NAMESPACE --timeout=120s
+                        kubectl get pods -n $NAMESPACE -l app=vite-app
                     '''
                 }
             }
