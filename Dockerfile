@@ -7,13 +7,23 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt gunicorn
 
-# copier tout le dossier local (main.py inclus)
 COPY --chown=app:app . .
 
 ARG PORT=4011
 ENV PORT=$PORT
 EXPOSE $PORT
 
+# dossier où gunicorn pourra écrire
+ENV GUNICORN_TMPDIR=/tmp
+RUN mkdir -p /tmp && chown app:app /tmp
+
 USER app
-# on lance le bon module
-CMD ["gunicorn", "main:app", "--bind", "0.0.0.0:4011", "--workers", "4", "--threads", "1"]
+
+CMD ["gunicorn", "main:app",
+     "--bind", "0.0.0.0:4011",
+     "--workers", "4",
+     "--threads", "1",
+     "--worker-tmp-dir", "/tmp",
+     "--tmp-upload-dir", "/tmp",
+     "--access-logfile", "-",
+     "--error-logfile", "-"]
