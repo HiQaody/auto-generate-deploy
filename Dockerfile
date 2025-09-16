@@ -19,11 +19,4 @@ RUN mkdir -p /tmp && chown app:app /tmp
 
 USER app
 
-CMD ["gunicorn", "main:app",
-     "--bind", "0.0.0.0:4011",
-     "--workers", "4",
-     "--threads", "1",
-     "--worker-tmp-dir", "/tmp",
-     "--tmp-upload-dir", "/tmp",
-     "--access-logfile", "-",
-     "--error-logfile", "-"]
+CMD ["gunicorn","main:app","--bind","0.0.0.0:4011","--workers","4","--threads","1","--worker-tmp-dir","/tmp","--tmp-upload-dir","/tmp","--access-logfile","-","--error-logfile","-"]
